@@ -54,6 +54,20 @@ Windows 使用 0.1.0 版本终端安装程序。本仓库不分发这两份安�
 
 部署辅助文件已放在 [`deployment/`](deployment/) 中。请单独下载 Docker 镜像，将它与校验文件放在同一目录后执行以下命令。镜像约 14.4 GB，因此不存储在 Git 中。
 
+### 下载 Docker 镜像
+
+从 [image-v1.0 Release](https://github.com/DISCOVER-Robotics/MMK2-IROS-Demo/releases/tag/image-v1.0) 下载 **全部 8 个分卷（`part-00` 至 `part-07`）** 和两份校验文件。每份均小于 GitHub 单附件 2 GiB 限制；分卷不是独立 Docker 镜像，不能单独加载。
+
+将下载文件放在同一目录，在 Linux 中执行以下命令。分卷与合并文件至少需要约 29 GB 可用空间，Docker 解压加载还需额外空间。若已有同名镜像文件，请先检查，避免覆盖。
+
+```bash
+sha256sum -c mmk2-iros-demo-1.0-parts.sha256
+cat mmk2-iros-demo-1.0.tar.zst.part-{00..07} > mmk2-iros-demo-1.0.tar.zst
+sha256sum -c mmk2-iros-demo-1.0-local.sha256
+```
+
+所有校验均显示 `OK` 后再继续。从 `deployment/` 取得下方脚本并放在同一目录。校验仅确认下载文件与提供的文件一致，不证明硬件兼容性或镜像来源真实性。
+
 | 文件 | 用途 |
 | --- | --- |
 | [`mmk2-check-env.sh`](deployment/mmk2-check-env.sh) | 环境及端口检查脚本 |
@@ -72,7 +86,7 @@ zstd -dc mmk2-iros-demo-1.0.tar.zst | docker load
 docker images mmk2-iros-demo:1.0
 ```
 
-部署文件中附带的原始校验文件对应另一份构建版本，已保留为 [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) 供追溯；当前提供的镜像请使用 `local` 校验文件。
+部署文件中附带的原始校验值与提供的镜像不一致，原因尚未确认。原文件已保留为 [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) 供追溯；当前提供的镜像请使用 `local` 校验文件。
 
 完成真机安全检查后，用实际机器人地址启动（替换示例地址 `192.168.1.100`）：
 

@@ -54,6 +54,20 @@ Windows uses the version 0.1.0 terminal installer. Neither installer is distribu
 
 The deployment helper files are available in [`deployment/`](deployment/). Download the Docker image separately, place it beside the checksum file, and run the checks below. The image itself is not stored in Git because it is approximately 14.4 GB.
 
+### Download the Docker image
+
+Download all **eight parts (`part-00` through `part-07`)** and both checksum files from the [image-v1.0 Release](https://github.com/DISCOVER-Robotics/MMK2-IROS-Demo/releases/tag/image-v1.0). Each part is below GitHub's 2 GiB attachment limit. Parts are not separate Docker images and cannot be loaded individually.
+
+Place the downloads in one directory and run the following on Linux. Keep at least 29 GB free for the parts and merged archive, plus additional space for Docker image extraction. Do not overwrite an existing archive without checking it first.
+
+```bash
+sha256sum -c mmk2-iros-demo-1.0-parts.sha256
+cat mmk2-iros-demo-1.0.tar.zst.part-{00..07} > mmk2-iros-demo-1.0.tar.zst
+sha256sum -c mmk2-iros-demo-1.0-local.sha256
+```
+
+Continue only if every checksum reports `OK`. Obtain the scripts below from `deployment/` and place them in the same directory before proceeding. The checksum confirms that the download matches the supplied file, not hardware compatibility or image authenticity.
+
 | File | Purpose |
 | --- | --- |
 | [`mmk2-check-env.sh`](deployment/mmk2-check-env.sh) | Host and port checks |
@@ -72,7 +86,7 @@ zstd -dc mmk2-iros-demo-1.0.tar.zst | docker load
 docker images mmk2-iros-demo:1.0
 ```
 
-The upstream checksum delivered with the deployment files records a different build. It is retained as [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) for provenance; use the `local` checksum for the image currently supplied with this demo.
+The checksum delivered with the deployment files does not match the supplied image; the reason has not been established. It is retained as [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) for provenance; use the `local` checksum for the image currently supplied with this demo.
 
 After completing the hardware safety checks, launch with your actual robot address (replace the example `192.168.1.100`):
 

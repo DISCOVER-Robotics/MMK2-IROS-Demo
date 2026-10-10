@@ -8,7 +8,7 @@ An MMK2 mobile manipulation demonstration for interactive prize delivery, medal-
 
 ## Availability
 
-This repository contains documentation and the six original reference images only. Application source, Docker images, deployment scripts, SDK wheels, terminal installers, the third-party chassis app, and the showroom navigation map are **not included**.
+This repository contains documentation, the six original reference images, and the small deployment helper files. The 14.4 GB Docker image, application source, SDK wheels, terminal installers, the third-party chassis app, and the showroom navigation map are **not stored in Git**.
 
 The source document identifies `/home/discover/mmk2_iros_demo/mmk2-iros` as a deployment directory, not a public source repository. Obtain the matching deployment package from the demo maintainer before following installation commands. Do not substitute unrelated MMK2 releases.
 
@@ -52,25 +52,27 @@ Windows uses the version 0.1.0 terminal installer. Neither installer is distribu
 
 ### Docker deployment
 
-Obtain the complete `mmk2-deploy-package/` separately. It must contain the following files; these are not generated or supplied by this repository:
+The deployment helper files are available in [`deployment/`](deployment/). Download the Docker image separately, place it beside the checksum file, and run the checks below. The image itself is not stored in Git because it is approximately 14.4 GB.
 
 | File | Purpose |
 | --- | --- |
-| `mmk2-iros-demo-1.0.tar.zst` | Compressed image, approximately 14.4 GB (32.5 GB uncompressed image) |
-| `mmk2-iros-demo-1.0.sha256` | Image checksum |
-| `mmk2-check-env.sh` | Host and port checks |
-| `mmk2-docker-run.sh` | Container launcher |
-| `mmk2-iros-demo-部署指南.md` | Full deployment guide |
-| `README-快速部署.txt` | Quick reference |
+| [`mmk2-check-env.sh`](deployment/mmk2-check-env.sh) | Host and port checks |
+| [`mmk2-docker-run.sh`](deployment/mmk2-docker-run.sh) | Container launcher |
+| [`mmk2-iros-demo-部署指南.md`](deployment/mmk2-iros-demo-部署指南.md) | Full deployment guide |
+| [`README-快速部署.txt`](deployment/README-快速部署.txt) | Quick reference |
+| [`mmk2-iros-demo-1.0-local.sha256`](deployment/mmk2-iros-demo-1.0-local.sha256) | SHA256 for the local image supplied with this demo |
 
-From that package directory, run:
+From the directory containing the image, run:
 
 ```bash
+chmod +x mmk2-check-env.sh mmk2-docker-run.sh
 ./mmk2-check-env.sh
-sha256sum -c mmk2-iros-demo-1.0.sha256
+sha256sum -c mmk2-iros-demo-1.0-local.sha256
 zstd -dc mmk2-iros-demo-1.0.tar.zst | docker load
 docker images mmk2-iros-demo:1.0
 ```
+
+The upstream checksum delivered with the deployment files records a different build. It is retained as [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) for provenance; use the `local` checksum for the image currently supplied with this demo.
 
 After completing the hardware safety checks, launch with your actual robot address (replace the example `192.168.1.100`):
 
@@ -150,4 +152,4 @@ For `CANNOT_REACH_TARGET`, the source guide identifies false map obstacles and m
 | Original deployment reference | [Feishu document](https://w79rvfxw83.feishu.cn/docx/TmDudmBTqoUlzRx5bXrcNbOjnNb); unavailable during publication checks, access may be restricted |
 | Source and deployment directory | `/home/discover/mmk2_iros_demo/mmk2-iros` on the original host; not a public download |
 
-Content and images are organized from `MMK2 IROS Demo 提测文档.zip`. Versions and commands describe that supplied document, not newly verified hardware behavior. No robot services were started during preparation. No source-code license or redistribution rights for third-party binaries are asserted by this documentation repository.
+Content, images, and deployment helpers are organized from `MMK2 IROS Demo 提测文档.zip` and `mmk2镜像部署相关文件`. Versions and commands describe those supplied materials, not newly verified hardware behavior. No robot services were started during preparation. No source-code license or redistribution rights for third-party binaries are asserted by this documentation repository.

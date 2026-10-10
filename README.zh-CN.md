@@ -8,7 +8,7 @@
 
 ## 资料范围
 
-本仓库仅公开整理后的文档及 6 张原始参考图片。**不包含**应用源码、Docker 镜像、部署脚本、SDK wheel、终端安装包、第三方底盘 App 或展厅导航地图。
+本仓库公开整理后的文档、6 张原始参考图片和较小的部署辅助文件。约 14.4 GB 的 Docker 镜像、应用源码、SDK wheel、终端安装包、第三方底盘 App 和展厅导航地图**不存储在 Git 中**。
 
 原文中的 `/home/discover/mmk2_iros_demo/mmk2-iros` 是部署机器的本地目录，不是公开源码仓库。执行安装命令前，请向 Demo 维护人员取得匹配的部署包，不要替换为其他 MMK2 版本的流程。
 
@@ -52,25 +52,27 @@ Windows 使用 0.1.0 版本终端安装程序。本仓库不分发这两份安�
 
 ### Docker 部署
 
-需单独取得完整的 `mmk2-deploy-package/`，其中应包含以下文件；本仓库不提供或生成这些文件：
+部署辅助文件已放在 [`deployment/`](deployment/) 中。请单独下载 Docker 镜像，将它与校验文件放在同一目录后执行以下命令。镜像约 14.4 GB，因此不存储在 Git 中。
 
 | 文件 | 用途 |
 | --- | --- |
-| `mmk2-iros-demo-1.0.tar.zst` | 约 14.4 GB 的压缩镜像，未压缩镜像约 32.5 GB |
-| `mmk2-iros-demo-1.0.sha256` | 镜像校验文件 |
-| `mmk2-check-env.sh` | 环境及端口检查脚本 |
-| `mmk2-docker-run.sh` | 容器启动脚本 |
-| `mmk2-iros-demo-部署指南.md` | 完整部署指南 |
-| `README-快速部署.txt` | 快速参考 |
+| [`mmk2-check-env.sh`](deployment/mmk2-check-env.sh) | 环境及端口检查脚本 |
+| [`mmk2-docker-run.sh`](deployment/mmk2-docker-run.sh) | 容器启动脚本 |
+| [`mmk2-iros-demo-部署指南.md`](deployment/mmk2-iros-demo-部署指南.md) | 完整部署指南 |
+| [`README-快速部署.txt`](deployment/README-快速部署.txt) | 快速参考 |
+| [`mmk2-iros-demo-1.0-local.sha256`](deployment/mmk2-iros-demo-1.0-local.sha256) | 本次提供镜像的 SHA256 |
 
-在部署包目录执行：
+在镜像所在目录执行：
 
 ```bash
+chmod +x mmk2-check-env.sh mmk2-docker-run.sh
 ./mmk2-check-env.sh
-sha256sum -c mmk2-iros-demo-1.0.sha256
+sha256sum -c mmk2-iros-demo-1.0-local.sha256
 zstd -dc mmk2-iros-demo-1.0.tar.zst | docker load
 docker images mmk2-iros-demo:1.0
 ```
+
+部署文件中附带的原始校验文件对应另一份构建版本，已保留为 [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) 供追溯；当前提供的镜像请使用 `local` 校验文件。
 
 完成真机安全检查后，用实际机器人地址启动（替换示例地址 `192.168.1.100`）：
 
@@ -150,4 +152,4 @@ journalctl -u mmk2-sim -u mmk2-app -f
 | 原始部署参考 | [飞书部署文档](https://w79rvfxw83.feishu.cn/docx/TmDudmBTqoUlzRx5bXrcNbOjnNb)；发布检查时无法访问，可能受权限限制 |
 | 源码与部署目录 | 原始主机的 `/home/discover/mmk2_iros_demo/mmk2-iros`，不是公开下载地址 |
 
-内容和图片整理自 `MMK2 IROS Demo 提测文档.zip`。版本及命令反映提供的原始文档，不代表本次完成真机验证；整理期间未启动机器人服务。本资料仓库不声明应用源码的开源许可，也不声明第三方安装包的再分发权限。
+内容、图片和部署辅助文件整理自 `MMK2 IROS Demo 提测文档.zip` 及 `mmk2镜像部署相关文件`。版本及命令反映提供的资料，不代表本次完成真机验证；整理期间未启动机器人服务。本资料仓库不声明应用源码的开源许可，也不声明第三方安装包的再分发权限。

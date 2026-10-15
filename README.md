@@ -2,19 +2,19 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-An MMK2 mobile manipulation demonstration for interactive prize delivery, medal-box handling, and automatic charging. This repository organizes the deployment and acceptance-test instructions for the original demonstration scene; it is not a general-purpose autonomous delivery system.
+An MMK2 mobile manipulation demonstration for interactive prize delivery, medal-box handling, and automatic charging. The demo uses a configured workstation and scene; it is not a general-purpose autonomous delivery system.
 
 ![MMK2 prize delivery workstation](assets/workstation.jpg)
 
 ## Availability
 
-This repository contains documentation, the six original reference images, and the small deployment helper files. The 14.4 GB Docker image, application source, SDK wheels, terminal installers, the third-party chassis app, and the showroom navigation map are **not stored in Git**.
+This repository contains deployment instructions, six images, and deployment helper files. The 14.4 GB Docker image, application source, SDK wheels, terminal installers, the third-party chassis app, and the showroom navigation map are **not stored in Git**.
 
-The source document identifies `/home/discover/mmk2_iros_demo/mmk2-iros` as a deployment directory, not a public source repository. Obtain the matching deployment package from the demo maintainer before following installation commands. Do not substitute unrelated MMK2 releases.
+`/home/discover/mmk2_iros_demo/mmk2-iros` is a local directory on the deployment host, not a public source repository. Obtain the matching deployment package from the demo maintainer before following installation commands. Do not substitute unrelated MMK2 releases.
 
 ## Hardware and safety
 
-| Component | Original configuration |
+| Component | Configuration |
 | --- | --- |
 | Robot | 1 MMK2 with two arms, grippers, and mobile base |
 | Prize boxes | 12 boxes, 22 × 15 × 10.5 cm, wall thickness 0.2 cm |
@@ -25,24 +25,24 @@ Before connecting or restarting services, verify the robot IP, controller addres
 
 ## Software baseline
 
-The instructions are based on acceptance document **V0.2.0 (2026-07-27)** and Docker image **`mmk2-iros-demo:1.0`**, built on 2026-07-27.
+Guide version: **V0.2.0 (2026-07-27)**. Docker image: **`mmk2-iros-demo:1.0`**, built on 2026-07-27.
 
-| Component | Documented version |
+| Component | Version |
 | --- | --- |
 | OS / Docker base | Ubuntu 22.04 |
 | Python | 3.12 |
 | Conda environments | `mmk2_iros`, `s2r_bridge` |
-| MediaPipe | 0.10.21; install with `--no-deps` when using the original host workflow |
+| MediaPipe | 0.10.21; install with `--no-deps` when using the host workflow |
 | MMK2 SDK wheel | `mmk2_sdk` 0.0.4.dev5, supplied in the deployment project's `packages/` |
 | Container components | Gradio 5.49.1, Ultralytics 8.4.95, AV 14.2.0, MuJoCo 3.10, Torch 2.11+cu128, DISCOVERSE 1.6.2, ROS 2 Jazzy via RoboStack |
 
-The original minimum host requirements are 8 CPU cores, 16 GB RAM, 40 GB disk, an NVIDIA RTX 30/40-series GPU with 6 GB VRAM, driver 535.x or later, Docker 20.10 or later, and NVIDIA Container Toolkit. The recommended configuration is 12+ cores, 32 GB RAM, 60+ GB disk, RTX 3090/4090 with 12+ GB VRAM, and driver 570.x or later. Ensure sufficient additional space for image loading and extraction.
+The minimum host requirements are 8 CPU cores, 16 GB RAM, 40 GB disk, an NVIDIA RTX 30/40-series GPU with 6 GB VRAM, driver 535.x or later, Docker 20.10 or later, and NVIDIA Container Toolkit. The recommended configuration is 12+ cores, 32 GB RAM, 60+ GB disk, RTX 3090/4090 with 12+ GB VRAM, and driver 570.x or later. Ensure sufficient additional space for image loading and extraction.
 
 ## Deployment
 
 ### Existing host installation
 
-For an already provisioned demo machine, `mmk2-sim` and `mmk2-app` are configured to start automatically according to the source guide. Install the matching prize terminal provided by the maintainer. For Ubuntu, the original installer command is:
+On a provisioned demo machine, `mmk2-sim` and `mmk2-app` are configured to start automatically. Install the matching prize terminal provided by the maintainer. For Ubuntu:
 
 ```bash
 sudo dpkg -i mmk2-award-terminal_0.1.0_amd64.deb
@@ -56,6 +56,8 @@ The deployment helper files are available in [`deployment/`](deployment/). Downl
 
 ### Download the Docker image
 
+**The archive currently published in the `image-v1.0` Release is incomplete and cannot be loaded successfully. Obtain a complete replacement image from the maintainer before Docker deployment. A matching checksum alone does not establish archive integrity.**
+
 Download all **eight parts (`part-00` through `part-07`)** and both checksum files from the [image-v1.0 Release](https://github.com/DISCOVER-Robotics/MMK2-IROS-Demo/releases/tag/image-v1.0). Each part is below GitHub's 2 GiB attachment limit. Parts are not separate Docker images and cannot be loaded individually.
 
 Place the downloads in one directory and run the following on Linux. Keep at least 29 GB free for the parts and merged archive, plus additional space for Docker image extraction. Do not overwrite an existing archive without checking it first.
@@ -66,7 +68,7 @@ cat mmk2-iros-demo-1.0.tar.zst.part-{00..07} > mmk2-iros-demo-1.0.tar.zst
 sha256sum -c mmk2-iros-demo-1.0-local.sha256
 ```
 
-Continue only if every checksum reports `OK`. Obtain the scripts below from `deployment/` and place them in the same directory before proceeding. The checksum confirms that the download matches the supplied file, not hardware compatibility or image authenticity.
+Continue only if every checksum reports `OK` and `zstd -t mmk2-iros-demo-1.0.tar.zst` confirms archive integrity. Obtain the scripts below from `deployment/` and place them in the same directory before proceeding. The checksum confirms that the download matches the supplied file, not archive completeness, hardware compatibility, or image authenticity.
 
 | File | Purpose |
 | --- | --- |
@@ -86,7 +88,7 @@ zstd -dc mmk2-iros-demo-1.0.tar.zst | docker load
 docker images mmk2-iros-demo:1.0
 ```
 
-The checksum delivered with the deployment files does not match the supplied image; the reason has not been established. It is retained as [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) for provenance; use the `local` checksum for the image currently supplied with this demo.
+The checksum delivered with the deployment files does not match the supplied image; the reason has not been established. [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) contains that checksum. The `local` checksum matches the currently supplied file but does not establish archive integrity. Obtain the matching checksum when downloading a replacement image.
 
 After completing the hardware safety checks, launch with your actual robot address (replace the example `192.168.1.100`):
 
@@ -94,7 +96,7 @@ After completing the hardware safety checks, launch with your actual robot addre
 NETWORK_MODE=host ROBOT_IP=192.168.1.100 ./mmk2-docker-run.sh
 ```
 
-The original script also supports `ENABLE_REALSENSE=true` for real cameras. Use the supplied deployment guide to configure networking and cameras; do not assume the screenshot addresses match your installation.
+The launcher also supports `ENABLE_REALSENSE=true` for real cameras. Use the deployment guide to configure networking and cameras; do not assume the screenshot addresses match your installation.
 
 ## Run the demonstration
 
@@ -112,7 +114,7 @@ The original script also supports `ENABLE_REALSENSE=true` for real cameras. Use 
 
 ![Prize collection screen](assets/prize-collection.jpg)
 
-The screenshots retain the original Chinese terminal UI and example addresses; the default documentation is English.
+The screenshots show the Chinese terminal UI. Replace example addresses with those of your installation.
 
 ## Services and troubleshooting
 
@@ -126,7 +128,7 @@ The screenshots retain the original Chinese terminal UI and example addresses; t
 | Simulation WebRTC | `http://<HOST>:8100` (configuration screenshot uses `/offer`) |
 | Head-camera WebRTC | `http://<HOST>:8081` (configuration screenshot uses `/offer`) |
 
-The original general network table lists only video port 8081, while its Docker instructions and UI also use 8100. Check the actual service configuration and launcher port mappings rather than treating these tables as interchangeable.
+Video services use ports 8081 and 8100. Check the actual service configuration and launcher port mappings for each endpoint.
 
 On an existing systemd installation, after completing the safety checks:
 
@@ -137,7 +139,7 @@ sudo systemctl restart mmk2-app
 journalctl -u mmk2-sim -u mmk2-app -f
 ```
 
-Reconnect the robot after restarting. The original log directory is `/home/discover/mmk2_iros_demo/mmk2-iros/logs`, with a documented seven-day cleanup interval. For Docker, use `docker logs -f mmk2_demo` and `docker exec mmk2_demo nvidia-smi` instead of assuming host systemd units exist.
+Reconnect the robot after restarting. The host log directory is `/home/discover/mmk2_iros_demo/mmk2-iros/logs`, with a seven-day cleanup interval. For Docker, use `docker logs -f mmk2_demo` and `docker exec mmk2_demo nvidia-smi` instead of assuming host systemd units exist.
 
 | HTTP status | Expected meaning |
 | --- | --- |
@@ -146,24 +148,24 @@ Reconnect the robot after restarting. The original log directory is `/home/disco
 | `422` | Invalid task or parameters, such as missing `prize_class`, row outside 1–3, or `prize_class` on `auto_charge` |
 | `503` | Robot not connected |
 
-For `gladLoadGL failed`, check `MUJOCO_GL=egl` and GPU drivers. For unavailable GPUs, check NVIDIA Container Toolkit. For failed robot connections, verify the robot address and gRPC port. Do not reinstall editable packages inside the original image: the source guide notes that Git is absent and recommends host-side development.
+For `gladLoadGL failed`, check `MUJOCO_GL=egl` and GPU drivers. For unavailable GPUs, check NVIDIA Container Toolkit. For failed robot connections, verify the robot address and gRPC port. Git is not installed in the image; do not reinstall editable packages inside the container. Use the host for development.
 
 ## Chassis map and localization
 
 Use a site-approved map and obtain the compatible Slamtec app separately. The showroom map and third-party APK are intentionally not published here.
 
-The original site procedure is to power-cycle the base using its power button, clear the operating area before releasing the brake/emergency stop, join the base Wi-Fi, and connect the app to `192.168.11.1:1445`. Upload the approved map and confirm it matches the site. Global relocalization rotates the base; keep the area clear. The source guide considers a localization quality above 90 successful for that scene.
+Power-cycle the base using its power button, clear the operating area before releasing the brake/emergency stop, join the base Wi-Fi, and connect the app to `192.168.11.1:1445`. Upload the approved map and confirm it matches the site. Global relocalization rotates the base; keep the area clear. For this demonstration scene, localization quality must exceed 90.
 
-![Original CANNOT_REACH_TARGET navigation log](assets/navigation-error.jpg)
+![CANNOT_REACH_TARGET navigation log](assets/navigation-error.jpg)
 
-For `CANNOT_REACH_TARGET`, the source guide identifies false map obstacles and motor faults as possible causes. Inspect the map and actual scene before changing obstacles; do not remove genuine safety obstacles to force a route.
+For `CANNOT_REACH_TARGET`, possible causes include false map obstacles and motor faults. Inspect the map and actual scene before changing obstacles; do not remove genuine safety obstacles to force a route.
 
-## References and scope
+## Resources
 
 | Resource | Location / availability |
 | --- | --- |
 | Product documentation | [DISCOVER Robotics Documentation Center](https://docs.discover-robotics.com/document/) |
-| Original deployment reference | [Feishu document](https://w79rvfxw83.feishu.cn/docx/TmDudmBTqoUlzRx5bXrcNbOjnNb); unavailable during publication checks, access may be restricted |
-| Source and deployment directory | `/home/discover/mmk2_iros_demo/mmk2-iros` on the original host; not a public download |
+| Deployment guide | [Feishu document](https://w79rvfxw83.feishu.cn/docx/TmDudmBTqoUlzRx5bXrcNbOjnNb); access permission may be required |
+| Source and deployment directory | `/home/discover/mmk2_iros_demo/mmk2-iros` on the deployment host; not a public download |
 
-Content, images, and deployment helpers are organized from `MMK2 IROS Demo 提测文档.zip` and `mmk2镜像部署相关文件`. Versions and commands describe those supplied materials, not newly verified hardware behavior. No robot services were started during preparation. No source-code license or redistribution rights for third-party binaries are asserted by this documentation repository.
+This repository does not grant a license to the application source or redistribution rights for third-party binaries.

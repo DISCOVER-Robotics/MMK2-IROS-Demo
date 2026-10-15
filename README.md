@@ -56,16 +56,19 @@ The deployment helper files are available in [`deployment/`](deployment/). Downl
 
 ### Download the Docker image
 
-**The archive currently published in the `image-v1.0` Release is incomplete and cannot be loaded successfully. Obtain a complete replacement image from the maintainer before Docker deployment. A matching checksum alone does not establish archive integrity.**
+Use the complete archive from **`image-v1.0-complete`**. Do not mix its parts or checksum files with those from the older `image-v1.0` Release.
 
-Download all **eight parts (`part-00` through `part-07`)** and both checksum files from the [image-v1.0 Release](https://github.com/DISCOVER-Robotics/MMK2-IROS-Demo/releases/tag/image-v1.0). Each part is below GitHub's 2 GiB attachment limit. Parts are not separate Docker images and cannot be loaded individually.
+Download all **eight parts (`part-00` through `part-07`)**, `mmk2-iros-demo-1.0-parts.sha256`, and `mmk2-iros-demo-1.0.sha256` from the [image-v1.0-complete Release](https://github.com/DISCOVER-Robotics/MMK2-IROS-Demo/releases/tag/image-v1.0-complete). Each part is below GitHub's 2 GiB attachment limit. Parts are not separate Docker images and cannot be loaded individually.
 
 Place the downloads in one directory and run the following on Linux. Keep at least 29 GB free for the parts and merged archive, plus additional space for Docker image extraction. Do not overwrite an existing archive without checking it first.
 
 ```bash
-sha256sum -c mmk2-iros-demo-1.0-parts.sha256
-cat mmk2-iros-demo-1.0.tar.zst.part-{00..07} > mmk2-iros-demo-1.0.tar.zst
-sha256sum -c mmk2-iros-demo-1.0-local.sha256
+sha256sum -c mmk2-iros-demo-1.0-parts.sha256 || exit 1
+# Stop if any part fails verification. Do not overwrite an existing merged archive.
+test ! -e mmk2-iros-demo-1.0.tar.zst || exit 1
+cat mmk2-iros-demo-1.0.tar.zst.part-{00..07} > mmk2-iros-demo-1.0.tar.zst || exit 1
+sha256sum -c mmk2-iros-demo-1.0.sha256 || exit 1
+zstd -t mmk2-iros-demo-1.0.tar.zst || exit 1
 ```
 
 Continue only if every checksum reports `OK` and `zstd -t mmk2-iros-demo-1.0.tar.zst` confirms archive integrity. Obtain the scripts below from `deployment/` and place them in the same directory before proceeding. The checksum confirms that the download matches the supplied file, not archive completeness, hardware compatibility, or image authenticity.
@@ -76,19 +79,22 @@ Continue only if every checksum reports `OK` and `zstd -t mmk2-iros-demo-1.0.tar
 | [`mmk2-docker-run.sh`](deployment/mmk2-docker-run.sh) | Container launcher |
 | [`mmk2-iros-demo-部署指南.md`](deployment/mmk2-iros-demo-部署指南.md) | Full deployment guide |
 | [`README-快速部署.txt`](deployment/README-快速部署.txt) | Quick reference |
-| [`mmk2-iros-demo-1.0-local.sha256`](deployment/mmk2-iros-demo-1.0-local.sha256) | SHA256 for the local image supplied with this demo |
+| [`mmk2-iros-demo-1.0.sha256`](deployment/mmk2-iros-demo-1.0.sha256) | SHA256 for the complete merged archive |
+| [`mmk2-iros-demo-1.0-parts.sha256`](deployment/mmk2-iros-demo-1.0-parts.sha256) | SHA256 for all eight parts in `image-v1.0-complete` |
 
 From the directory containing the image, run:
 
 ```bash
 chmod +x mmk2-check-env.sh mmk2-docker-run.sh
 ./mmk2-check-env.sh
-sha256sum -c mmk2-iros-demo-1.0-local.sha256
+sha256sum -c mmk2-iros-demo-1.0.sha256 || exit 1
+zstd -t mmk2-iros-demo-1.0.tar.zst || exit 1
+set -o pipefail
 zstd -dc mmk2-iros-demo-1.0.tar.zst | docker load
 docker images mmk2-iros-demo:1.0
 ```
 
-The checksum delivered with the deployment files does not match the supplied image; the reason has not been established. [`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) contains that checksum. The `local` checksum matches the currently supplied file but does not establish archive integrity. Obtain the matching checksum when downloading a replacement image.
+The complete archive has SHA256 `ae5fbada298049e649338f501353a5d7db79da8d0ad855f28307e0227f8cd2f5`, matching the deployment package checksum. Its Zstandard integrity test and full tar archive read passed. These checks validate the archive, not GPU compatibility or physical robot operation.
 
 After completing the hardware safety checks, launch with your actual robot address (replace the example `192.168.1.100`):
 

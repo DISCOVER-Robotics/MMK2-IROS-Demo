@@ -56,16 +56,19 @@ Windows 使用 0.1.0 版本终端安装程序。本仓库不分发这两份安�
 
 ### 下载 Docker 镜像
 
-**目前 `image-v1.0` Release 中的压缩包不完整，无法成功加载。Docker 部署前，请向维护人员取得完整的替换镜像。校验和一致并不代表压缩包完整可用。**
+请使用 **`image-v1.0-complete`** 中的完整镜像。不要与旧 `image-v1.0` Release 的分卷或校验文件混用。
 
-从 [image-v1.0 Release](https://github.com/DISCOVER-Robotics/MMK2-IROS-Demo/releases/tag/image-v1.0) 下载 **全部 8 个分卷（`part-00` 至 `part-07`）** 和两份校验文件。每份均小于 GitHub 单附件 2 GiB 限制；分卷不是独立 Docker 镜像，不能单独加载。
+从 [image-v1.0-complete Release](https://github.com/DISCOVER-Robotics/MMK2-IROS-Demo/releases/tag/image-v1.0-complete) 下载 **全部 8 个分卷（`part-00` 至 `part-07`）**、`mmk2-iros-demo-1.0-parts.sha256` 和 `mmk2-iros-demo-1.0.sha256`。每份均小于 GitHub 单附件 2 GiB 限制；分卷不是独立 Docker 镜像，不能单独加载。
 
 将下载文件放在同一目录，在 Linux 中执行以下命令。分卷与合并文件至少需要约 29 GB 可用空间，Docker 解压加载还需额外空间。若已有同名镜像文件，请先检查，避免覆盖。
 
 ```bash
-sha256sum -c mmk2-iros-demo-1.0-parts.sha256
-cat mmk2-iros-demo-1.0.tar.zst.part-{00..07} > mmk2-iros-demo-1.0.tar.zst
-sha256sum -c mmk2-iros-demo-1.0-local.sha256
+sha256sum -c mmk2-iros-demo-1.0-parts.sha256 || exit 1
+# 任一分卷校验失败时停止。不要覆盖已有的合并镜像。
+test ! -e mmk2-iros-demo-1.0.tar.zst || exit 1
+cat mmk2-iros-demo-1.0.tar.zst.part-{00..07} > mmk2-iros-demo-1.0.tar.zst || exit 1
+sha256sum -c mmk2-iros-demo-1.0.sha256 || exit 1
+zstd -t mmk2-iros-demo-1.0.tar.zst || exit 1
 ```
 
 所有校验均显示 `OK`，且 `zstd -t mmk2-iros-demo-1.0.tar.zst` 完整性检查通过后再继续。从 `deployment/` 取得下方脚本并放在同一目录。校验和仅确认下载文件与提供的文件一致，不证明压缩包完整性、硬件兼容性或镜像来源真实性。
@@ -76,19 +79,22 @@ sha256sum -c mmk2-iros-demo-1.0-local.sha256
 | [`mmk2-docker-run.sh`](deployment/mmk2-docker-run.sh) | 容器启动脚本 |
 | [`mmk2-iros-demo-部署指南.md`](deployment/mmk2-iros-demo-部署指南.md) | 完整部署指南 |
 | [`README-快速部署.txt`](deployment/README-快速部署.txt) | 快速参考 |
-| [`mmk2-iros-demo-1.0-local.sha256`](deployment/mmk2-iros-demo-1.0-local.sha256) | 当前提供镜像文件的 SHA256 |
+| [`mmk2-iros-demo-1.0.sha256`](deployment/mmk2-iros-demo-1.0.sha256) | 完整合并镜像的 SHA256 |
+| [`mmk2-iros-demo-1.0-parts.sha256`](deployment/mmk2-iros-demo-1.0-parts.sha256) | `image-v1.0-complete` 全部 8 个分卷的 SHA256 |
 
 在镜像所在目录执行：
 
 ```bash
 chmod +x mmk2-check-env.sh mmk2-docker-run.sh
 ./mmk2-check-env.sh
-sha256sum -c mmk2-iros-demo-1.0-local.sha256
+sha256sum -c mmk2-iros-demo-1.0.sha256 || exit 1
+zstd -t mmk2-iros-demo-1.0.tar.zst || exit 1
+set -o pipefail
 zstd -dc mmk2-iros-demo-1.0.tar.zst | docker load
 docker images mmk2-iros-demo:1.0
 ```
 
-部署文件中附带的校验值与提供的镜像不一致，原因尚未确认。[`mmk2-iros-demo-1.0-upstream.sha256`](deployment/mmk2-iros-demo-1.0-upstream.sha256) 包含该校验值。`local` 校验值与当前提供的文件一致，但不代表压缩包完整可用。下载替换镜像时，请同时取得匹配的校验文件。
+完整镜像的 SHA256 为 `ae5fbada298049e649338f501353a5d7db79da8d0ad855f28307e0227f8cd2f5`，与部署包校验值一致。Zstandard 完整性检查和完整 tar 读取均已通过。这些检查验证归档文件，不代表已验证 GPU 兼容性或真机运行。
 
 完成真机安全检查后，用实际机器人地址启动（替换示例地址 `192.168.1.100`）：
 
